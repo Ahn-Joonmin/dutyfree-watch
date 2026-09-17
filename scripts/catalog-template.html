@@ -1,0 +1,253 @@
+<title>신라 위스키 카탈로그</title>
+<meta name="description" content="신라면세점 위스키 전체 661종을 국가·지역·타입별로 분류해 훑어보는 실시간 스크래핑 스냅샷">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#faf6ee; --surface:#ffffff; --surface-2:#f2ece0; --line:#e4dac8;
+    --ink:#241f16; --ink-dim:#6b6455; --ink-faint:#948c79;
+    --navy:#1c2a40; --navy-ink:#eef1f5; --gold:#b8862f; --gold-ink:#fff8ea;
+    --good:#2f6e4e; --good-bg:#e7f1ea; --focus:#1c2a40;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#171310; --surface:#231e18; --surface-2:#2b241c; --line:#3a3226;
+      --ink:#f2ece0; --ink-dim:#bcb2a0; --ink-faint:#8b8272;
+      --navy:#c9d6ea; --navy-ink:#161d29; --gold:#e0b256; --gold-ink:#2a2113;
+      --good:#7fcba0; --good-bg:#1e3229; --focus:#e0b256;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#171310; --surface:#231e18; --surface-2:#2b241c; --line:#3a3226;
+    --ink:#f2ece0; --ink-dim:#bcb2a0; --ink-faint:#8b8272;
+    --navy:#c9d6ea; --navy-ink:#161d29; --gold:#e0b256; --gold-ink:#2a2113;
+    --good:#7fcba0; --good-bg:#1e3229; --focus:#e0b256;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans KR','Noto Sans KR',sans-serif;padding-inline:20px;padding-block:28px 60px}
+  .wrap{max-width:980px;margin:0 auto}
+  h1{font-family:'Fraunces',serif}
+  header.top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:8px}
+  .brand{display:flex;flex-direction:column;gap:4px}
+  .brand .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:600}
+  .brand h1{margin:0;font-size:clamp(22px,4vw,30px);font-weight:600;text-wrap:balance}
+  .asof{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-faint)}
+
+  .notice{display:flex;gap:10px;align-items:flex-start;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:11px 14px;margin:16px 0 22px;font-size:13px;color:var(--ink-dim);line-height:1.5}
+  .notice .dot{color:var(--gold);flex:none;font-size:15px;line-height:1.4}
+
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:22px}
+  .stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+  .stat .label{font-size:11.5px;color:var(--ink-faint);margin-bottom:5px}
+  .stat .value{font-family:'IBM Plex Mono',monospace;font-size:19px;font-weight:600;font-variant-numeric:tabular-nums}
+  .stat .value.gold{color:var(--gold)}
+
+  .search{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 14px;margin-bottom:14px}
+  .search svg{flex:none;color:var(--ink-faint)}
+  .search input{border:0;background:none;outline:none;font-size:14.5px;color:var(--ink);width:100%;font-family:inherit}
+  .search input::placeholder{color:var(--ink-faint)}
+
+  .facets{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+  .facet-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .facet-row .facet-label{font-size:12px;color:var(--ink-faint);flex:none;width:38px}
+  .chip{font-size:12.5px;padding:6px 13px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink-dim);cursor:pointer;font-family:inherit;white-space:nowrap}
+  .chip[aria-pressed="true"]{background:var(--navy);color:var(--navy-ink);border-color:var(--navy)}
+  .chip:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+
+  .sortbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:10px;flex-wrap:wrap}
+  .count{font-size:13px;color:var(--ink-dim)}
+  select{font-family:inherit;font-size:13px;border:1px solid var(--line);border-radius:8px;padding:6px 10px;background:var(--surface);color:var(--ink)}
+
+  .list{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surface)}
+  .row{display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--line)}
+  .row:last-child{border-bottom:none}
+  .row .name-col{flex:1;min-width:0}
+  .row .name{font-size:14px;font-weight:600;text-wrap:balance}
+  .row .meta{font-size:12px;color:var(--ink-faint);margin-top:2px;display:flex;gap:6px;flex-wrap:wrap}
+  .row .meta span:not(:last-child)::after{content:"·";margin-left:6px;color:var(--line)}
+  .row .price-col{flex:none;text-align:right;font-family:'IBM Plex Mono',monospace}
+  .row .rate{color:var(--good);font-weight:600;font-size:14px}
+  .row .price{font-size:12.5px;color:var(--ink-dim)}
+  .row .price s{color:var(--ink-faint);margin-right:5px}
+  .row.soldout{opacity:.5}
+  .row .soldout-tag{font-size:11px;color:var(--ink-faint);flex:none}
+
+  footer{margin-top:28px;text-align:center;font-size:12px;color:var(--ink-faint);line-height:1.6}
+
+  @media (max-width:520px){
+    .row{flex-wrap:wrap}
+    .price-col{margin-left:auto}
+  }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <span class="eyebrow">Shilla Duty-Free · Whisky</span>
+      <h1>신라 위스키 카탈로그</h1>
+    </div>
+    <div class="asof" id="asof"></div>
+  </header>
+
+  <div class="notice">
+    <span class="dot">●</span>
+    <span>신라면세점 위스키 카테고리(싱글몰트+블렌디드) <b>전체 661종을 실제로 스크래핑</b>한 스냅샷입니다. 국가·지역은 브랜드 기준으로 직접 분류해 붙였고(스카치는 업계 통용 지역 구분), 일부 소규모 브랜드는 정보 부족으로 "미분류"로 표시됩니다. 신세계면세점 데이터는 아직 포함되지 않았습니다.</span>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="label">전체 상품</div><div class="value" id="statCount">-</div></div>
+    <div class="stat"><div class="label">국가 수</div><div class="value" id="statCountries">-</div></div>
+    <div class="stat"><div class="label">평균 할인율</div><div class="value" id="statAvg">-</div></div>
+    <div class="stat"><div class="label">최고 할인율</div><div class="value gold" id="statMax">-</div></div>
+  </div>
+
+  <div class="search">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <input id="searchInput" type="text" placeholder="브랜드명이나 상품명으로 검색 (예: 글렌피딕, 야마자키)">
+  </div>
+
+  <div class="facets" id="facetBar"></div>
+
+  <div class="sortbar">
+    <span class="count" id="resultCount"></span>
+    <select id="sortSelect">
+      <option value="discount-desc">할인율 높은순</option>
+      <option value="discount-asc">할인율 낮은순</option>
+      <option value="price-asc">가격 낮은순</option>
+      <option value="price-desc">가격 높은순</option>
+      <option value="name">이름순</option>
+    </select>
+  </div>
+
+  <div class="list" id="list"></div>
+
+  <footer>
+    <div>가격은 신라면세점 표시 기준 USD, 출국 시 실물 인도되는 면세 특성상 결제 화면 가격과 다를 수 있습니다.</div>
+    <div>© 면세주류 워치 · 개인 프로젝트 (실데이터 스냅샷, 실시간 갱신 아님)</div>
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var WHISKY = __WHISKY_DATA__;
+  var SCRAPED_AT = "__SCRAPED_AT__";
+
+  document.getElementById("asof").textContent = "스크래핑 시각 " + SCRAPED_AT;
+
+  var query = "";
+  var activeCountry = "전체";
+  var activeRegion = "전체";
+  var activeType = "전체";
+  var sortMode = "discount-desc";
+
+  function uniq(arr){ return Array.from(new Set(arr)); }
+  function fmtUsd(n){ return "$" + Number(n).toLocaleString("en-US"); }
+
+  function countryOrder(){
+    var counts = {};
+    WHISKY.forEach(function(p){ counts[p.country] = (counts[p.country]||0)+1; });
+    return uniq(WHISKY.map(function(p){return p.country;})).sort(function(a,b){ return counts[b]-counts[a]; });
+  }
+
+  function renderChipRow(container, label, options, current, onPick){
+    var row = document.createElement("div");
+    row.className = "facet-row";
+    var l = document.createElement("span");
+    l.className = "facet-label";
+    l.textContent = label;
+    row.appendChild(l);
+    ["전체"].concat(options).forEach(function(opt){
+      var b = document.createElement("button");
+      b.className = "chip";
+      b.type = "button";
+      b.textContent = opt;
+      b.setAttribute("aria-pressed", String(opt === current));
+      b.addEventListener("click", function(){ onPick(opt); render(); });
+      row.appendChild(b);
+    });
+    container.appendChild(row);
+  }
+
+  function render(){
+    var facetBar = document.getElementById("facetBar");
+    facetBar.innerHTML = "";
+    renderChipRow(facetBar, "국가", countryOrder(), activeCountry, function(v){
+      activeCountry = v; activeRegion = "전체"; render();
+    });
+    if (activeCountry !== "전체"){
+      var regions = uniq(WHISKY.filter(function(p){return p.country===activeCountry;}).map(function(p){return p.region;}));
+      renderChipRow(facetBar, "지역", regions, activeRegion, function(v){ activeRegion = v; });
+    }
+    renderChipRow(facetBar, "타입", uniq(WHISKY.map(function(p){return p.type;})), activeType, function(v){ activeType = v; });
+
+    var q = query.trim().toLowerCase();
+    var filtered = WHISKY.filter(function(p){
+      if (activeCountry !== "전체" && p.country !== activeCountry) return false;
+      if (activeRegion !== "전체" && p.region !== activeRegion) return false;
+      if (activeType !== "전체" && p.type !== activeType) return false;
+      if (q && (p.name + p.brand).toLowerCase().indexOf(q) === -1) return false;
+      return true;
+    });
+
+    filtered.sort(function(a,b){
+      switch(sortMode){
+        case "discount-asc": return a.discountRate - b.discountRate;
+        case "price-asc": return a.salePrice - b.salePrice;
+        case "price-desc": return b.salePrice - a.salePrice;
+        case "name": return a.name.localeCompare(b.name, "ko");
+        default: return b.discountRate - a.discountRate;
+      }
+    });
+
+    document.getElementById("resultCount").textContent = filtered.length.toLocaleString() + "개";
+
+    var list = document.getElementById("list");
+    var frag = document.createDocumentFragment();
+    filtered.slice(0, 300).forEach(function(p){
+      var row = document.createElement("div");
+      row.className = "row" + (p.stock === 0 ? " soldout" : "");
+      row.innerHTML =
+        '<div class="name-col">' +
+          '<div class="name">' + p.brand + ' — ' + p.name + '</div>' +
+          '<div class="meta"><span>' + p.country + '</span><span>' + p.region + '</span><span>' + p.type + '</span></div>' +
+        '</div>' +
+        (p.stock === 0 ? '<span class="soldout-tag">품절</span>' : '') +
+        '<div class="price-col">' +
+          '<div class="rate">' + p.discountRate + '%</div>' +
+          '<div class="price">' + fmtUsd(p.discountPrice) + '</div>' +
+        '</div>';
+      frag.appendChild(row);
+    });
+    list.innerHTML = "";
+    if (filtered.length === 0){
+      list.innerHTML = '<div class="row"><span>조건에 맞는 상품이 없어요.</span></div>';
+    } else {
+      list.appendChild(frag);
+      if (filtered.length > 300){
+        var more = document.createElement("div");
+        more.className = "row";
+        more.innerHTML = '<span style="color:var(--ink-faint);font-size:12.5px">상위 300개만 표시 중 — 검색이나 필터로 좁혀보세요 (' + (filtered.length-300) + '개 더 있음)</span>';
+        list.appendChild(more);
+      }
+    }
+
+    updateStats();
+  }
+
+  function updateStats(){
+    document.getElementById("statCount").textContent = WHISKY.length.toLocaleString();
+    document.getElementById("statCountries").textContent = uniq(WHISKY.map(function(p){return p.country;})).length;
+    var rates = WHISKY.map(function(p){return p.discountRate;});
+    var avg = rates.reduce(function(a,b){return a+b;},0)/rates.length;
+    document.getElementById("statAvg").textContent = avg.toFixed(1) + "%";
+    document.getElementById("statMax").textContent = Math.max.apply(null, rates) + "%";
+  }
+
+  document.getElementById("searchInput").addEventListener("input", function(e){ query = e.target.value; render(); });
+  document.getElementById("sortSelect").addEventListener("change", function(e){ sortMode = e.target.value; render(); });
+
+  render();
+})();
+</script>
