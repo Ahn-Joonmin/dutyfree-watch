@@ -1,0 +1,426 @@
+<title>면세주류 워치</title>
+<meta name="description" content="신라·신세계 면세점 주류 할인율을 한눈에 비교하고, 원하는 할인율에 도달하면 알림을 받도록 설정하는 페이지">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#faf6ee;
+    --surface:#ffffff;
+    --surface-2:#f2ece0;
+    --line:#e4dac8;
+    --ink:#241f16;
+    --ink-dim:#6b6455;
+    --ink-faint:#948c79;
+    --navy:#1c2a40;
+    --navy-ink:#eef1f5;
+    --gold:#b8862f;
+    --gold-ink:#fff8ea;
+    --good:#2f6e4e;
+    --good-bg:#e7f1ea;
+    --warn:#a44a2f;
+    --warn-bg:#f7e9e1;
+    --focus:#1c2a40;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#171310;
+      --surface:#231e18;
+      --surface-2:#2b241c;
+      --line:#3a3226;
+      --ink:#f2ece0;
+      --ink-dim:#bcb2a0;
+      --ink-faint:#8b8272;
+      --navy:#c9d6ea;
+      --navy-ink:#161d29;
+      --gold:#e0b256;
+      --gold-ink:#2a2113;
+      --good:#7fcba0;
+      --good-bg:#1e3229;
+      --warn:#e29a7c;
+      --warn-bg:#3a2620;
+      --focus:#e0b256;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#171310;
+    --surface:#231e18;
+    --surface-2:#2b241c;
+    --line:#3a3226;
+    --ink:#f2ece0;
+    --ink-dim:#bcb2a0;
+    --ink-faint:#8b8272;
+    --navy:#c9d6ea;
+    --navy-ink:#161d29;
+    --gold:#e0b256;
+    --gold-ink:#2a2113;
+    --good:#7fcba0;
+    --good-bg:#1e3229;
+    --warn:#e29a7c;
+    --warn-bg:#3a2620;
+    --focus:#e0b256;
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'IBM Plex Sans KR', 'Noto Sans KR', sans-serif;
+    padding-inline:20px;
+    padding-block:28px 60px;
+  }
+  .wrap{max-width:920px;margin:0 auto}
+
+  h1,h2,.display{font-family:'Fraunces', serif}
+
+  header.top{
+    display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;
+    margin-bottom:22px;
+  }
+  .brand{display:flex;flex-direction:column;gap:4px}
+  .brand .eyebrow{
+    font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:600;
+  }
+  .brand h1{margin:0;font-size:clamp(24px,4vw,32px);font-weight:600;text-wrap:balance}
+  .fx{
+    font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--ink-dim);
+    background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 10px;
+    white-space:nowrap;
+  }
+  .fx b{color:var(--ink);font-variant-numeric:tabular-nums}
+
+  .notice{
+    display:flex;gap:10px;align-items:flex-start;
+    background:var(--surface-2);border:1px solid var(--line);border-radius:10px;
+    padding:11px 14px;margin-bottom:22px;font-size:13px;color:var(--ink-dim);line-height:1.5;
+  }
+  .notice .dot{color:var(--gold);flex:none;font-size:15px;line-height:1.4}
+
+  .stats{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:26px;
+  }
+  .stat{
+    background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;
+  }
+  .stat .label{font-size:12px;color:var(--ink-faint);margin-bottom:6px}
+  .stat .value{font-family:'IBM Plex Mono',monospace;font-size:21px;font-weight:600;font-variant-numeric:tabular-nums}
+  .stat .value.gold{color:var(--gold)}
+
+  .toolbar{
+    display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;
+  }
+  .chip{
+    font-size:13px;padding:7px 14px;border-radius:999px;border:1px solid var(--line);
+    background:var(--surface);color:var(--ink-dim);cursor:pointer;font-family:inherit;
+  }
+  .chip[aria-pressed="true"]{background:var(--navy);color:var(--navy-ink);border-color:var(--navy)}
+  .chip:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+
+  .search{
+    display:flex;align-items:center;gap:8px;
+    background:var(--surface);border:1px solid var(--line);border-radius:10px;
+    padding:9px 14px;margin-bottom:22px;
+  }
+  .search svg{flex:none;color:var(--ink-faint)}
+  .search input{
+    border:0;background:none;outline:none;font-size:14.5px;color:var(--ink);width:100%;
+    font-family:inherit;
+  }
+  .search input::placeholder{color:var(--ink-faint)}
+
+  .list{display:flex;flex-direction:column;gap:12px}
+
+  .card{
+    background:var(--surface);border:1px solid var(--line);border-radius:14px;
+    padding:16px 18px;
+  }
+  .card-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:14px}
+  .id .cat{font-size:11.5px;color:var(--gold);font-weight:600;letter-spacing:.02em}
+  .id .name{font-family:'Fraunces',serif;font-size:18px;font-weight:600;margin-top:2px;text-wrap:balance}
+  .id .brand-name{font-size:12.5px;color:var(--ink-faint)}
+  .best-badge{
+    flex:none;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;
+    background:var(--good-bg);color:var(--good);border-radius:999px;padding:5px 11px;
+    white-space:nowrap;
+  }
+  .best-badge.alert-ready{background:var(--warn-bg);color:var(--warn)}
+
+  .stores{
+    display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;
+  }
+  .store{
+    border:1px solid var(--line);border-radius:10px;padding:10px 12px;position:relative;
+  }
+  .store.win{border-color:var(--gold)}
+  .store .store-name{font-size:12px;color:var(--ink-faint);display:flex;justify-content:space-between}
+  .store .store-name .win-tag{color:var(--gold);font-weight:600}
+  .store .price-row{display:flex;align-items:baseline;gap:8px;margin-top:6px;flex-wrap:wrap}
+  .store .rate{
+    font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:15px;color:var(--good);
+  }
+  .store .price{
+    font-family:'IBM Plex Mono',monospace;font-size:14.5px;font-variant-numeric:tabular-nums;
+  }
+  .store .price s{color:var(--ink-faint);font-weight:400;margin-right:6px;font-size:12.5px}
+
+  .alert-row{
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    border-top:1px dashed var(--line);padding-top:12px;
+  }
+  .alert-row label{font-size:13px;color:var(--ink-dim);display:flex;align-items:center;gap:6px}
+  .alert-row input[type="number"]{
+    width:64px;border:1px solid var(--line);border-radius:7px;padding:5px 8px;
+    font-family:'IBM Plex Mono',monospace;font-size:13.5px;background:var(--bg);color:var(--ink);
+  }
+  .alert-row input[type="number"]:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+  .btn{
+    margin-left:auto;font-size:13px;font-weight:600;border-radius:999px;padding:7px 16px;
+    border:1px solid var(--navy);background:var(--navy);color:var(--navy-ink);cursor:pointer;
+    font-family:inherit;
+  }
+  .btn.on{background:var(--gold);border-color:var(--gold);color:var(--gold-ink)}
+  .btn:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+  .watching-tag{font-size:12px;color:var(--gold);font-weight:600;font-family:'IBM Plex Mono',monospace}
+
+  footer{
+    margin-top:34px;text-align:center;font-size:12px;color:var(--ink-faint);line-height:1.6;
+  }
+
+  .toast{
+    position:fixed;left:50%;bottom:24px;transform:translate(-50%,12px);
+    background:var(--navy);color:var(--navy-ink);padding:11px 18px;border-radius:10px;
+    font-size:13.5px;opacity:0;pointer-events:none;transition:opacity .2s ease, transform .2s ease;
+    max-width:calc(100% - 32px);text-align:center;
+  }
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+
+  @media (max-width:520px){
+    .stores{grid-template-columns:1fr}
+    .card-head{flex-direction:column}
+  }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <span class="eyebrow">Duty-Free Whisky Watch</span>
+      <h1>면세주류 워치</h1>
+    </div>
+    <div class="fx">USD/KRW <b id="fxRate">1,353.30</b></div>
+  </header>
+
+  <div class="notice">
+    <span class="dot">●</span>
+    <span>지금 보이는 가격·할인율은 <b>예시 데이터</b>입니다. 신라·신세계 실시간 연동과 알림 발송은 아직 준비 중이라, 여기서 "알림받기"를 눌러도 실제 발송은 되지 않고 이 브라우저에만 설정이 저장돼요.</span>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="label">오늘 등록 상품</div><div class="value" id="statCount">-</div></div>
+    <div class="stat"><div class="label">평균 할인율</div><div class="value" id="statAvg">-</div></div>
+    <div class="stat"><div class="label">최고 할인율</div><div class="value gold" id="statMax">-</div></div>
+    <div class="stat"><div class="label">알림 설정한 상품</div><div class="value" id="statWatch">0</div></div>
+  </div>
+
+  <div class="search">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <input id="searchInput" type="text" placeholder="브랜드명이나 상품명으로 검색 (예: 조니워커, 발렌타인)">
+  </div>
+
+  <div class="toolbar" id="filterBar" role="group" aria-label="카테고리 필터"></div>
+
+  <div class="list" id="list"></div>
+
+  <footer>
+    <div>가격은 각 면세점 표시 기준 USD이며, 출국 시 실물 인도되는 면세 특성상 실제 결제 화면 가격과 다를 수 있습니다.</div>
+    <div>© 면세주류 워치 · 개인 프로젝트 (목업)</div>
+  </footer>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  var PRODUCTS = [
+    { id:"jw-blue-750", cat:"위스키", brand:"조니워커", name:"조니워커 블루 750ml",
+      shilla:{ price:227, rate:30 }, ssg:{ price:232, rate:22 } },
+    { id:"ballantine-30", cat:"위스키", brand:"발렌타인", name:"발렌타인 30년 RESTAGE 700ml",
+      shilla:{ price:447, rate:30 }, ssg:{ price:459, rate:18 } },
+    { id:"glenfiddich-18", cat:"위스키", brand:"글렌피딕", name:"글렌피딕 18년 벳4 퍼페추얼 컬렉션 700ml",
+      shilla:{ price:145, rate:36 }, ssg:{ price:139, rate:33 } },
+    { id:"bowmore-22", cat:"위스키", brand:"보모어", name:"보모어 22년 700ml",
+      shilla:{ price:399, rate:48 }, ssg:{ price:399, rate:40 } },
+    { id:"royal-salute-21", cat:"위스키", brand:"로얄살루트", name:"로얄살루트 21년 700ml",
+      shilla:{ price:176, rate:30 }, ssg:{ price:181, rate:26 } },
+    { id:"camus-borderies", cat:"꼬냑", brand:"까뮤", name:"까뮤 보더리 로얄 뱅킷 700ml",
+      shilla:{ price:399, rate:48 }, ssg:{ price:405, rate:44 } },
+    { id:"courvoisier-xo", cat:"꼬냑", brand:"쿠르부아지에", name:"쿠르부아지에 XO 로얄 700ml",
+      shilla:{ price:290, rate:50 }, ssg:{ price:295, rate:41 } },
+    { id:"opus-one-2022", cat:"와인", brand:"오퍼스 원", name:"오퍼스 원 2022 750ml",
+      shilla:{ price:532, rate:15 }, ssg:{ price:520, rate:12 } },
+    { id:"woodford-double-oak", cat:"스피릿", brand:"우드포드 리저브", name:"우드포드 리저브 더블 오크 1000ml",
+      shilla:{ price:75, rate:46 }, ssg:{ price:78, rate:38 } },
+  ];
+
+  var STORAGE_KEY = "dutyfree-watch-alerts-v1";
+
+  function loadAlerts(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : {};
+    }catch(e){ return {}; }
+  }
+  function saveAlerts(alerts){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(alerts)); }catch(e){}
+  }
+
+  var alerts = loadAlerts();
+  var activeCat = "전체";
+  var query = "";
+
+  function fmtUsd(n){ return "$" + n.toLocaleString("en-US"); }
+
+  function bestStore(p){
+    return p.shilla.rate >= p.ssg.rate ? "shilla" : "ssg";
+  }
+
+  function render(){
+    var cats = ["전체"].concat(Array.from(new Set(PRODUCTS.map(function(p){return p.cat;}))));
+    var bar = document.getElementById("filterBar");
+    bar.innerHTML = "";
+    cats.forEach(function(c){
+      var b = document.createElement("button");
+      b.className = "chip";
+      b.textContent = c;
+      b.type = "button";
+      b.setAttribute("aria-pressed", String(c === activeCat));
+      b.addEventListener("click", function(){ activeCat = c; render(); });
+      bar.appendChild(b);
+    });
+
+    var filtered = PRODUCTS.filter(function(p){
+      var matchCat = activeCat === "전체" || p.cat === activeCat;
+      var q = query.trim().toLowerCase();
+      var matchQ = !q || (p.name + p.brand).toLowerCase().indexOf(q) !== -1;
+      return matchCat && matchQ;
+    });
+
+    var list = document.getElementById("list");
+    list.innerHTML = "";
+
+    filtered.forEach(function(p){
+      var win = bestStore(p);
+      var winRate = p[win].rate;
+      var alertVal = alerts[p.id];
+      var alertReady = alertVal != null && winRate >= alertVal;
+
+      var card = document.createElement("article");
+      card.className = "card";
+
+      var storeBlock = function(key, label){
+        var s = p[key];
+        var isWin = key === win;
+        var orig = Math.round(s.price / (1 - s.rate/100));
+        return '' +
+          '<div class="store' + (isWin ? ' win' : '') + '">' +
+            '<div class="store-name">' + label + (isWin ? '<span class="win-tag">최저가</span>' : '') + '</div>' +
+            '<div class="price-row">' +
+              '<span class="rate">' + s.rate + '%</span>' +
+              '<span class="price"><s>' + fmtUsd(orig) + '</s>' + fmtUsd(s.price) + '</span>' +
+            '</div>' +
+          '</div>';
+      };
+
+      card.innerHTML =
+        '<div class="card-head">' +
+          '<div class="id">' +
+            '<div class="cat">' + p.cat + '</div>' +
+            '<div class="name">' + p.name + '</div>' +
+            '<div class="brand-name">' + p.brand + '</div>' +
+          '</div>' +
+          '<div class="best-badge' + (alertReady ? ' alert-ready' : '') + '">' +
+            (alertReady ? '🔔 목표 도달 · ' : '최고 ') + winRate + '%' +
+          '</div>' +
+        '</div>' +
+        '<div class="stores">' +
+          storeBlock("shilla", "신라면세점") +
+          storeBlock("ssg", "신세계면세점") +
+        '</div>' +
+        '<div class="alert-row">' +
+          '<label for="target-' + p.id + '">할인율</label>' +
+          '<input type="number" id="target-' + p.id + '" min="1" max="90" value="' + (alertVal != null ? alertVal : 40) + '">' +
+          '<label for="target-' + p.id + '">% 이상이면 알림</label>' +
+          (alertVal != null ? '<span class="watching-tag">감시 중</span>' : '') +
+          '<button type="button" class="btn' + (alertVal != null ? ' on' : '') + '" data-id="' + p.id + '">' +
+            (alertVal != null ? '알림 해제' : '알림받기') +
+          '</button>' +
+        '</div>';
+
+      list.appendChild(card);
+    });
+
+    if (filtered.length === 0){
+      list.innerHTML = '<div class="notice"><span class="dot">●</span><span>조건에 맞는 상품이 없어요. 검색어나 필터를 바꿔보세요.</span></div>';
+    }
+
+    list.querySelectorAll(".btn").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var id = btn.getAttribute("data-id");
+        var input = document.getElementById("target-" + id);
+        if (alerts[id] != null){
+          delete alerts[id];
+          showToast("알림을 해제했어요.");
+        } else {
+          var val = Math.max(1, Math.min(90, Number(input.value) || 40));
+          alerts[id] = val;
+          showToast(val + "% 이상 할인되면 알려드릴게요. (목업 — 실제 발송 아님)");
+        }
+        saveAlerts(alerts);
+        render();
+        updateStats(filtered.length ? PRODUCTS : PRODUCTS);
+      });
+    });
+
+    list.querySelectorAll('input[type="number"]').forEach(function(inp){
+      inp.addEventListener("change", function(){
+        var id = inp.id.replace("target-", "");
+        if (alerts[id] != null){
+          alerts[id] = Math.max(1, Math.min(90, Number(inp.value) || 40));
+          saveAlerts(alerts);
+          showToast("목표 할인율을 " + alerts[id] + "%로 바꿨어요.");
+        }
+      });
+    });
+
+    updateStats();
+  }
+
+  function updateStats(){
+    var rates = PRODUCTS.map(function(p){ return Math.max(p.shilla.rate, p.ssg.rate); });
+    var avg = rates.reduce(function(a,b){return a+b;}, 0) / rates.length;
+    var max = Math.max.apply(null, rates);
+    document.getElementById("statCount").textContent = PRODUCTS.length;
+    document.getElementById("statAvg").textContent = avg.toFixed(1) + "%";
+    document.getElementById("statMax").textContent = max + "%";
+    document.getElementById("statWatch").textContent = Object.keys(alerts).length;
+  }
+
+  var toastTimer = null;
+  function showToast(msg){
+    var el = document.getElementById("toast");
+    el.textContent = msg;
+    el.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ el.classList.remove("show"); }, 2600);
+  }
+
+  document.getElementById("searchInput").addEventListener("input", function(e){
+    query = e.target.value;
+    render();
+  });
+
+  render();
+})();
+</script>
