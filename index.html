@@ -139,6 +139,13 @@
   .id .cat{font-size:11.5px;color:var(--gold);font-weight:600;letter-spacing:.02em}
   .id .name{font-family:'Fraunces',serif;font-size:18px;font-weight:600;margin-top:2px;text-wrap:balance}
   .id .brand-name{font-size:12.5px;color:var(--ink-faint)}
+  .id .meta{font-size:12px;color:var(--ink-faint);margin-top:3px;display:flex;gap:6px;flex-wrap:wrap}
+  .id .meta span:not(:last-child)::after{content:"·";margin-left:6px;color:var(--line)}
+
+  .facets{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+  .facet-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .facet-row .facet-label{font-size:12px;color:var(--ink-faint);flex:none;width:38px}
+  .chip.sub{font-size:12.5px;padding:5px 12px}
   .best-badge{
     flex:none;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;
     background:var(--good-bg);color:var(--good);border-radius:999px;padding:5px 11px;
@@ -229,6 +236,8 @@
 
   <div class="toolbar" id="filterBar" role="group" aria-label="카테고리 필터"></div>
 
+  <div class="facets" id="facetBar"></div>
+
   <div class="list" id="list"></div>
 
   <footer>
@@ -244,22 +253,59 @@
   "use strict";
 
   var PRODUCTS = [
+    // 위스키 — type: 싱글몰트 | 블렌디드, country/region 명시
     { id:"jw-blue-750", cat:"위스키", brand:"조니워커", name:"조니워커 블루 750ml",
+      type:"블렌디드", country:"스코틀랜드", region:"스코틀랜드 전역",
       shilla:{ price:227, rate:30 }, ssg:{ price:232, rate:22 } },
     { id:"ballantine-30", cat:"위스키", brand:"발렌타인", name:"발렌타인 30년 RESTAGE 700ml",
+      type:"블렌디드", country:"스코틀랜드", region:"스코틀랜드 전역",
       shilla:{ price:447, rate:30 }, ssg:{ price:459, rate:18 } },
+    { id:"royal-salute-21", cat:"위스키", brand:"로얄살루트", name:"로얄살루트 21년 700ml",
+      type:"블렌디드", country:"스코틀랜드", region:"스코틀랜드 전역",
+      shilla:{ price:176, rate:30 }, ssg:{ price:181, rate:26 } },
     { id:"glenfiddich-18", cat:"위스키", brand:"글렌피딕", name:"글렌피딕 18년 벳4 퍼페추얼 컬렉션 700ml",
+      type:"싱글몰트", country:"스코틀랜드", region:"스페이사이드",
       shilla:{ price:145, rate:36 }, ssg:{ price:139, rate:33 } },
     { id:"bowmore-22", cat:"위스키", brand:"보모어", name:"보모어 22년 700ml",
+      type:"싱글몰트", country:"스코틀랜드", region:"아일라",
       shilla:{ price:399, rate:48 }, ssg:{ price:399, rate:40 } },
-    { id:"royal-salute-21", cat:"위스키", brand:"로얄살루트", name:"로얄살루트 21년 700ml",
-      shilla:{ price:176, rate:30 }, ssg:{ price:181, rate:26 } },
+    { id:"highland-park-18", cat:"위스키", brand:"하이랜드 파크", name:"하이랜드 파크 18년 바이킹 프라이드 700ml",
+      type:"싱글몰트", country:"스코틀랜드", region:"하이랜드(오크니)",
+      shilla:{ price:210, rate:33 }, ssg:{ price:205, rate:29 } },
+    { id:"redbreast-15", cat:"위스키", brand:"레드브레스트", name:"레드브레스트 15년 700ml",
+      type:"싱글몰트", country:"아일랜드", region:"미들턴",
+      shilla:{ price:145, rate:25 }, ssg:{ price:149, rate:20 } },
+    { id:"yamazaki-12", cat:"위스키", brand:"야마자키", name:"야마자키 12년 700ml",
+      type:"싱글몰트", country:"일본", region:"오사카",
+      shilla:{ price:230, rate:12 }, ssg:{ price:225, rate:15 } },
+    { id:"hibiki-21", cat:"위스키", brand:"히비키", name:"히비키 21년 700ml",
+      type:"블렌디드", country:"일본", region:"-",
+      shilla:{ price:520, rate:10 }, ssg:{ price:510, rate:14 } },
+
+    // 꼬냑
     { id:"camus-borderies", cat:"꼬냑", brand:"까뮤", name:"까뮤 보더리 로얄 뱅킷 700ml",
       shilla:{ price:399, rate:48 }, ssg:{ price:405, rate:44 } },
     { id:"courvoisier-xo", cat:"꼬냑", brand:"쿠르부아지에", name:"쿠르부아지에 XO 로얄 700ml",
       shilla:{ price:290, rate:50 }, ssg:{ price:295, rate:41 } },
-    { id:"opus-one-2022", cat:"와인", brand:"오퍼스 원", name:"오퍼스 원 2022 750ml",
-      shilla:{ price:532, rate:15 }, ssg:{ price:520, rate:12 } },
+
+    // 와인 — 이탈리아·프랑스만 (뉴월드/나파 제외), country/region/varietal 명시
+    { id:"chateau-margaux-15", cat:"와인", brand:"샤토 마고", name:"샤토 마고 2015 750ml",
+      country:"프랑스", region:"보르도", varietal:"카베르네 소비뇽 블렌드",
+      shilla:{ price:980, rate:14 }, ssg:{ price:960, rate:11 } },
+    { id:"louis-jadot-romanee", cat:"와인", brand:"루이 자도", name:"루이 자도 본 로마네 1er 750ml",
+      country:"프랑스", region:"부르고뉴", varietal:"피노 누아",
+      shilla:{ price:210, rate:20 }, ssg:{ price:215, rate:17 } },
+    { id:"dom-perignon-13", cat:"와인", brand:"돔페리뇽", name:"돔페리뇽 빈티지 2013 750ml",
+      country:"프랑스", region:"샹파뉴", varietal:"샤르도네·피노 누아",
+      shilla:{ price:230, rate:18 }, ssg:{ price:225, rate:22 } },
+    { id:"brunello-montalcino-18", cat:"와인", brand:"카사노바 디 네리", name:"브루넬로 디 몬탈치노 2018 750ml",
+      country:"이탈리아", region:"토스카나", varietal:"산지오베제",
+      shilla:{ price:145, rate:24 }, ssg:{ price:150, rate:19 } },
+    { id:"barolo-19", cat:"와인", brand:"조르다노", name:"바롤로 2019 750ml",
+      country:"이탈리아", region:"피에몬테", varietal:"네비올로",
+      shilla:{ price:98, rate:28 }, ssg:{ price:95, rate:31 } },
+
+    // 스피릿
     { id:"woodford-double-oak", cat:"스피릿", brand:"우드포드 리저브", name:"우드포드 리저브 더블 오크 1000ml",
       shilla:{ price:75, rate:46 }, ssg:{ price:78, rate:38 } },
   ];
@@ -279,6 +325,7 @@
   var alerts = loadAlerts();
   var activeCat = "전체";
   var query = "";
+  var sub = { type:"전체", country:"전체" };
 
   function fmtUsd(n){ return "$" + n.toLocaleString("en-US"); }
 
@@ -286,8 +333,31 @@
     return p.shilla.rate >= p.ssg.rate ? "shilla" : "ssg";
   }
 
+  function uniq(arr){ return Array.from(new Set(arr)); }
+
+  function renderChipRow(container, label, options, current, onPick){
+    var row = document.createElement("div");
+    row.className = "facet-row";
+    if (label){
+      var l = document.createElement("span");
+      l.className = "facet-label";
+      l.textContent = label;
+      row.appendChild(l);
+    }
+    ["전체"].concat(options).forEach(function(opt){
+      var b = document.createElement("button");
+      b.className = "chip sub";
+      b.type = "button";
+      b.textContent = opt;
+      b.setAttribute("aria-pressed", String(opt === current));
+      b.addEventListener("click", function(){ onPick(opt); render(); });
+      row.appendChild(b);
+    });
+    container.appendChild(row);
+  }
+
   function render(){
-    var cats = ["전체"].concat(Array.from(new Set(PRODUCTS.map(function(p){return p.cat;}))));
+    var cats = ["전체"].concat(uniq(PRODUCTS.map(function(p){return p.cat;})));
     var bar = document.getElementById("filterBar");
     bar.innerHTML = "";
     cats.forEach(function(c){
@@ -296,15 +366,36 @@
       b.textContent = c;
       b.type = "button";
       b.setAttribute("aria-pressed", String(c === activeCat));
-      b.addEventListener("click", function(){ activeCat = c; render(); });
+      b.addEventListener("click", function(){
+        activeCat = c;
+        sub = { type:"전체", country:"전체" };
+        render();
+      });
       bar.appendChild(b);
     });
 
+    var facetBar = document.getElementById("facetBar");
+    facetBar.innerHTML = "";
+    if (activeCat === "위스키"){
+      var whiskies = PRODUCTS.filter(function(p){ return p.cat === "위스키"; });
+      renderChipRow(facetBar, "타입", uniq(whiskies.map(function(p){return p.type;})), sub.type, function(v){ sub.type = v; });
+      renderChipRow(facetBar, "국가", uniq(whiskies.map(function(p){return p.country;})), sub.country, function(v){ sub.country = v; });
+    } else if (activeCat === "와인"){
+      var wines = PRODUCTS.filter(function(p){ return p.cat === "와인"; });
+      renderChipRow(facetBar, "국가", uniq(wines.map(function(p){return p.country;})), sub.country, function(v){ sub.country = v; });
+    }
+
     var filtered = PRODUCTS.filter(function(p){
       var matchCat = activeCat === "전체" || p.cat === activeCat;
+      var matchSub = true;
+      if (activeCat === "위스키"){
+        matchSub = (sub.type === "전체" || p.type === sub.type) && (sub.country === "전체" || p.country === sub.country);
+      } else if (activeCat === "와인"){
+        matchSub = (sub.country === "전체" || p.country === sub.country);
+      }
       var q = query.trim().toLowerCase();
       var matchQ = !q || (p.name + p.brand).toLowerCase().indexOf(q) !== -1;
-      return matchCat && matchQ;
+      return matchCat && matchSub && matchQ;
     });
 
     var list = document.getElementById("list");
@@ -318,6 +409,13 @@
 
       var card = document.createElement("article");
       card.className = "card";
+
+      var metaHtml = "";
+      if (p.cat === "위스키"){
+        metaHtml = '<div class="meta"><span>' + p.country + '</span><span>' + p.region + '</span><span>' + p.type + '</span></div>';
+      } else if (p.cat === "와인"){
+        metaHtml = '<div class="meta"><span>' + p.country + '</span><span>' + p.region + '</span><span>' + p.varietal + '</span></div>';
+      }
 
       var storeBlock = function(key, label){
         var s = p[key];
@@ -339,6 +437,7 @@
             '<div class="cat">' + p.cat + '</div>' +
             '<div class="name">' + p.name + '</div>' +
             '<div class="brand-name">' + p.brand + '</div>' +
+            metaHtml +
           '</div>' +
           '<div class="best-badge' + (alertReady ? ' alert-ready' : '') + '">' +
             (alertReady ? '🔔 목표 도달 · ' : '최고 ') + winRate + '%' +
